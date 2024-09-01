@@ -3,22 +3,24 @@ import img2pdf
 from PIL import Image 
 from natsort import natsorted
 import shutil
+import cv2
 
 ## 【使い方】
-##  0. pdf化する画像のバックアップをとる!
-##  1. fromフォルダにpdf化したい画像を入れる。
+##  1.fromフォルダにpdf化したい画像をフォルダごと入れる
+## 　（フォルダに入っている画像をまとめてpdf化する。pdfの名前はフォルダの名前と同じものになる）
 ##     画像ファイルの名前はページ順に、自然数の順で名付ける。
-##　　　サポートしているファイル形式：jpg、pdf、webp
-##  2. コマンドラインで、"python3 webp2pdf.py"と入力し、実行。
-##  3. output.pdfが出力される
-##     注意：fromフォルダの画像は全消去されるので、必ずバックアップをとっておくこと！
+##　　　サポートしているファイル形式：jpg、png、webp
+##  2. 実行。
+##  3. pdf_filesフォルダにpdfがまとめて出力される
+## 　（fromフォルダの画像は消去されない。出力を確認後削除すること）
+## 
 
-if __name__ == '__main__':
-    pdf_FileName = "./output.pdf" 
-    jpg_Folder = "./to/" 
-    webp_Folder = "./from/"
-    
-    os.mkdir("./to")
+def webp_to_pdf(root_path, file_name):
+    pdf_FileName = root_path + "/" + file_name + "/" + file_name + ".pdf" 
+    jpg_Folder = root_path + "/" + file_name + "/to/"
+    webp_Folder = root_path + "/" + file_name + "/"
+
+    os.mkdir(root_path + "/" + file_name + "/to")
 
     cnt = 1
     hoge = os.listdir(webp_Folder)
@@ -28,15 +30,34 @@ if __name__ == '__main__':
            j.endswith(".png") or j.endswith(".PNG") or \
            j.endswith(".jpg") or j.endswith(".JPG") or \
            j.endswith(".jpeg") or j.endswith(".JPEG") :
-            im = Image.open(webp_Folder + j).convert("RGB")
+            try:
+                im = Image.open(webp_Folder + j).convert("RGB")
+            except OSError:
+                cvimg = cv2.imread(webp_Folder + j)
+                cvimg = cv2.cvtColor(cvimg, cv2.COLOR_BGR2RGB)
+                im =  Image.fromarray(cvimg)
             im.save(jpg_Folder + str(cnt) + ".jpg", "jpeg")
             cnt = cnt+1
-            
+
     with open(pdf_FileName,"wb") as f:
         fuga = os.listdir(jpg_Folder) 
         fuga = natsorted(fuga)
         f.write(img2pdf.convert([Image.open(jpg_Folder+j).filename for j in fuga if j.endswith(".jpg")]))
 
+    shutil.move(pdf_FileName, root_path + "/pdf_files/" + file_name + ".pdf") 
+
     shutil.rmtree(jpg_Folder)
-    shutil.rmtree(webp_Folder)
-    os.mkdir("./from")
+    #shutil.rmtree(webp_Folder)
+    #os.mkdir("./from")
+
+if __name__ == '__main__':
+    root_path = "/Users/haraguchitakuya/webp2pdf/from" #input()
+
+    os.mkdir(root_path + "/pdf_files")
+
+    if os.path.isdir(root_path):
+        dirs = os.listdir(root_path)
+        for dir in dirs:
+            if (dir != ".DS_Store" and dir != "pdf_files"):
+                webp_to_pdf(root_path, dir)
+
