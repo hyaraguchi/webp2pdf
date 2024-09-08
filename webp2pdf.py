@@ -9,7 +9,7 @@ import cv2
 ##  1.fromフォルダにpdf化したい画像をフォルダごと入れる
 ## 　（フォルダに入っている画像をまとめてpdf化する。pdfの名前はフォルダの名前と同じものになる）
 ##     画像ファイルの名前はページ順に、自然数の順で名付ける。
-##　　　サポートしているファイル形式：jpg、png、webp
+##　　　サポートしているファイル形式：jpg、jpeg、png、webp
 ##  2. 実行。
 ##  3. pdf_filesフォルダにpdfがまとめて出力される
 ## 　（fromフォルダの画像は消去されない。出力を確認後削除すること）
@@ -51,7 +51,7 @@ def webp_to_pdf(root_path, file_name):
     #os.mkdir("./from")
 
 if __name__ == '__main__':
-    root_path = "/Users/haraguchitakuya/webp2pdf/from" #input()
+    root_path = "./from" #input()
 
     os.mkdir(root_path + "/pdf_files")
 
